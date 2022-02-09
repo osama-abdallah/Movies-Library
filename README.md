@@ -3,7 +3,7 @@
 **Author Name**: Osama Abdallah
 
 ## WRRC
-![](../Movies-Library/images/WRRC.jpg)
+![image](../Movies-Library/images/WRRC.jpg)
 
 ## Overview
 
