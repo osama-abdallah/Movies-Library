@@ -42,6 +42,39 @@ app.post("/addMovie", addmovieHandler);
 
 app.get("/getMovie", getMovieHandler);
 
+app.put("/UPDATE/:id",updateHandler);
+
+app.delete("/DELETE/:id", deleteHandler);
+
+app.get("/getMovie/:id",getMovieId);
+
+function getMovieId (req,res){
+
+    const id = req.params.id;
+
+    const sql = `SELECT * FROM favmovies WHERE id=${id}`;
+
+    client.query(sql).then((data)=>{
+        return res.status(200).json(data.rows);
+    })
+    .catch(error =>{errorHandler(error,req,res)        
+    })
+
+
+}
+
+function deleteHandler (req, res){
+
+    let id = req.params.id;
+
+    const sql = `DELETE FROM favmovies WHERE id=${id}`;
+
+    client.query(sql).then(() =>{
+        return res.status(200).json([]);
+    })
+
+}
+
 function addmovieHandler (req , res){
     // console.log(req.body);  
     const movie = req.body;
@@ -53,6 +86,22 @@ function addmovieHandler (req , res){
     client.query(sql, values).then((data) => {
         return res.status(201).json(data.rows);
     })
+}
+
+function updateHandler (req, res){
+
+let id = req.params.id;
+
+const movie = req.body;
+
+let values = [movie.title, movie.release_date, movie.poster_path, movie.overview];
+
+const sql = `UPDATE favmovies SET title=$1,release_date=$2, poster_path=$3, overview=$4 WHERE id=${id} RETURNING *`;
+
+client.query(sql, values).then((data) =>{
+    return res.status(200).json(data.rows);
+})
+
 }
 
 function getMovieHandler(req, res){
@@ -82,6 +131,15 @@ function homePageHandler(req, res){
 
     res.status(200).json(movies);
 };
+
+function errorHandler(error,req,res){
+
+    const err = {status:500,
+    message:error.message}
+res.status(500).send(err);
+}
+
+
 
 function error500Handler(error,req,res) {
     return {
