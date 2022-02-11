@@ -1,6 +1,8 @@
 'use strict';
 
 // let query= "10950"
+let pg = require("pg");
+
 
 let express = require('express'); // express here is a module
 
@@ -12,11 +14,14 @@ let axios = require("axios");
 
 const dotenv = require('dotenv');
 
-// const req = require('express/lib/request');
+dotenv.config();
+
+app.use(express.json());
+
+const database_url = process.env.DATABASE_URL
 
 // const res = require('express/lib/response');
-
-dotenv.config();
+const client = new pg.Client(database_url)
 
 const APIKEY = process.env.APIKEY;
 const PORT = process.env.PORT;
@@ -32,6 +37,34 @@ app.get("/search", searchHandler);
 app.get("/movieId/:id", movieIdHandler);
 
 app.get("/movieCredits", creditsHandler);
+
+app.post("/addMovie", addmovieHandler);
+
+app.get("/getMovie", getMovieHandler);
+
+function addmovieHandler (req , res){
+    // console.log(req.body);  
+    const movie = req.body;
+
+    const sql = `INSERT INTO favmovies(title, release_date, poster_path, overview ) VALUES($1, $2, $3, $4)`;
+
+    let values = [movie.title, movie.release_date, movie.poster_path, movie.overview];
+
+    client.query(sql, values).then((data) => {
+        return res.status(201).json(data.rows);
+    })
+}
+
+function getMovieHandler(req, res){
+
+    const sql = `SELECT * FROM favmovies`;
+
+client.query(sql).then(data => {
+    return res.status(200).json(data.rows);
+})
+}
+ 
+
 
 function MovieData(id,title,release_date, poster_path, overview) {
    this.id = id;
@@ -50,14 +83,14 @@ function homePageHandler(req, res){
     res.status(200).json(movies);
 };
 
-function error500Handler() {
+function error500Handler(error,req,res) {
     return {
         status: 500,
         responseText: "Sorry, something went wrong",
     };
 };
 
-function error404Handler() {
+function error404Handler(error,req,res) {
 
     return {
         status: 404,
@@ -154,9 +187,12 @@ function creditsHandler(req,res){ //url request : http://127.0.0.1:3004/movieCre
         }))
             });
         }
-
-app.listen(PORT, () => {
-    console.log(APIKEY);  // we use this to check if server is listing(running)
+client.connect().then(()=>{
+    app.listen(PORT, () => {
+        console.log(`listening on port${PORT}`);  // we use this to check if server is listing(running)
+    });
 });
+
+
 
 //APIKEY = 68b3268dd4980111467b76cc9a4025eb
