@@ -21,7 +21,10 @@ app.use(express.json());
 const database_url = process.env.DATABASE_URL
 
 // const res = require('express/lib/response');
-const client = new pg.Client(database_url)
+const client = new pg.Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
 
 const APIKEY = process.env.APIKEY;
 const PORT = process.env.PORT;
