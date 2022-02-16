@@ -6,7 +6,11 @@ let pg = require("pg");
 
 let express = require('express'); // express here is a module
 
+let cors = require('cors')
+
 let app = express(); // configure express ; till here i have a server that does nothing; this step is called intialization
+
+app.use(cors())
 
 let jsonData = require("./Movie Data/data.json");
 
